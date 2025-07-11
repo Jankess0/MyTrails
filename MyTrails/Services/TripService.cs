@@ -22,7 +22,7 @@ public class TripService
         return trips.Select(_tripMapper.ToDto);
     }
 
-    public async Task<TripDto?> GetTripAsync(string id)
+    public async Task<TripDto?> GetTripAsync(int id)
     {
         var trip = await _trips.Find(t => t.Id == id).FirstOrDefaultAsync();
         return trip == null ? null : _tripMapper.ToDto(trip);
@@ -30,11 +30,16 @@ public class TripService
 
     public async Task<TripDto> CreateTripAsync(TripDto dto)
     {
-        if (string.IsNullOrWhiteSpace(dto.Id) || dto.Id == "string")
-        {
-            dto.Id = null;
-        }
+        var lastTrip = await _trips
+            .Find(_ => true)
+            .SortByDescending(t => t.Id)
+            .Limit(1)
+            .FirstOrDefaultAsync();
+          
+        var nextId = (lastTrip?.Id ?? 0) + 1;
+
         var trip = _tripMapper.ToEntity(dto);
+        trip.Id = nextId;
         await _trips.InsertOneAsync(trip);
         return _tripMapper.ToDto(trip);
         
@@ -51,7 +56,7 @@ public class TripService
         
     }
 
-    public async Task<bool> DeleteTripAsync(string id)
+    public async Task<bool> DeleteTripAsync(int id)
     {
         var trip = await _trips.Find(t => t.Id == id).FirstOrDefaultAsync();
         if (trip == null) return false;

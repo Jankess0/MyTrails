@@ -6,8 +6,11 @@ namespace MyTrails.Models;
 public class Trip
 {
     [BsonId]
-    [BsonRepresentation(BsonType.ObjectId)]
-    public string? Id { get; set; }
+    [BsonIgnoreIfDefault]
+    public ObjectId _id { get; set; }
+    
+    [BsonElement("Id")]
+    public int Id { get; set; }
     public string Name { get; set; }
     public string Description { get; set; }
     public string Duration { get; set; }
